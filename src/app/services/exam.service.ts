@@ -1,4 +1,4 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal, computed, effect } from '@angular/core';
 import { Question } from '../models/question.model';
 import { EXAM_QUESTIONS } from '../data/questions';
 
@@ -78,7 +78,44 @@ export class ExamService {
     return Math.round((this.score() / total) * 100);
   });
 
-  constructor() {}
+  constructor() {
+    this.loadProgress();
+
+    effect(() => {
+      const state = {
+        currentIndex: this.currentIndex(),
+        userAnswers: Array.from(this.userAnswers().entries()),
+        submittedQuestions: Array.from(this.submittedQuestions().values()),
+        isExamFinished: this.isExamFinished()
+      };
+      if (typeof window !== 'undefined' && window.localStorage) {
+        localStorage.setItem('gh300_progress', JSON.stringify(state));
+      }
+    });
+  }
+
+  private loadProgress() {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      const saved = localStorage.getItem('gh300_progress');
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (parsed.currentIndex !== undefined) this.currentIndex.set(parsed.currentIndex);
+          if (parsed.userAnswers) this.userAnswers.set(new Map(parsed.userAnswers));
+          if (parsed.submittedQuestions) this.submittedQuestions.set(new Set(parsed.submittedQuestions));
+          if (parsed.isExamFinished !== undefined) this.isExamFinished.set(parsed.isExamFinished);
+        } catch (e) {
+          console.error('Error loading progress', e);
+        }
+      }
+    }
+  }
+
+  clearProgress() {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      localStorage.removeItem('gh300_progress');
+    }
+  }
 
   startExam() {
     this.activeQuestions.set(this.allQuestions());
