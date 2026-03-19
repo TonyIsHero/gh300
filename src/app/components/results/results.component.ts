@@ -8,9 +8,9 @@ import { ExamService } from '../../services/exam.service';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="min-h-screen bg-slate-50 dark:bg-slate-900 flex flex-col items-center justify-center p-4 transition-colors duration-300">
+    <div class="min-h-screen bg-slate-50 dark:bg-black flex flex-col items-center justify-center p-4 transition-colors duration-300">
       
-      <div class="w-full bg-white/80 dark:bg-slate-800/80 backdrop-blur-md rounded-[2.5rem] shadow-2xl p-6 lg:p-14 border border-slate-200 dark:border-white/10 text-center relative overflow-hidden transition-all duration-500"
+      <div class="w-full bg-white/90 dark:bg-[#0f0f13]/90 backdrop-blur-md rounded-[2.5rem] shadow-2xl p-6 lg:p-14 border border-slate-200 dark:border-white/10 text-center relative overflow-hidden transition-all duration-500"
            [ngClass]="examService.mode() === 'mock' ? 'max-w-4xl' : 'max-w-2xl'">
         
         <!-- Background Decor -->
@@ -42,11 +42,11 @@ import { ExamService } from '../../services/exam.service';
 
           <!-- Stats -->
           <div class="grid grid-cols-2 gap-4 mb-12">
-            <div class="bg-slate-100/50 dark:bg-slate-900/50 rounded-2xl p-4 border border-slate-200 dark:border-slate-700/50">
+            <div class="bg-slate-100/50 dark:bg-white/5 rounded-2xl p-4 border border-slate-200 dark:border-white/5">
               <p class="text-slate-500 dark:text-slate-400 text-sm font-semibold uppercase tracking-wider mb-1">Score</p>
               <p class="text-2xl font-bold text-slate-900 dark:text-white">{{ examService.score() }} <span class="text-slate-400 dark:text-slate-500">/ {{ examService.totalQuestions() }}</span></p>
             </div>
-            <div class="bg-slate-100/50 dark:bg-slate-900/50 rounded-2xl p-4 border border-slate-200 dark:border-slate-700/50">
+            <div class="bg-slate-100/50 dark:bg-white/5 rounded-2xl p-4 border border-slate-200 dark:border-white/5">
               <p class="text-slate-500 dark:text-slate-400 text-sm font-semibold uppercase tracking-wider mb-1">Status</p>
               @if (examService.percentage() >= 70) {
                 <p class="text-2xl font-bold text-emerald-500 dark:text-emerald-400">Passed</p>
@@ -79,11 +79,11 @@ import { ExamService } from '../../services/exam.service';
           <!-- Review Block -->
           @if (showReview) {
             <div class="mt-12 text-left space-y-6 animate-in slide-in-from-bottom-8 fade-in duration-500">
-              <h2 class="text-2xl font-bold border-b-2 border-slate-200 dark:border-slate-700 pb-3 text-slate-900 dark:text-white">Areas for Improvement</h2>
+              <h2 class="text-2xl font-bold border-b-2 border-slate-200 dark:border-white/10 pb-3 text-slate-900 dark:text-white">Areas for Improvement</h2>
               
               <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 @for (q of incorrectQuestions(); track q.id) {
-                  <div class="bg-slate-50 dark:bg-slate-900/50 p-6 rounded-2xl border border-slate-200 dark:border-slate-700/50 flex flex-col group hover:shadow-lg transition-all">
+                  <div class="bg-slate-50 dark:bg-white/5 p-6 rounded-2xl border border-slate-200 dark:border-white/5 flex flex-col group hover:shadow-lg transition-all">
                     @if (q.category) {
                       <span class="self-start px-3 py-1 bg-indigo-100 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 text-xs font-bold rounded-full mb-3 uppercase tracking-wider">
                         {{ q.category }}

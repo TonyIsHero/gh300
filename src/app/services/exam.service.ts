@@ -200,6 +200,22 @@ export class ExamService {
     });
   }
 
+  clearCurrentSelection() {
+    const q = this.currentQuestion();
+    if (q) {
+      this.userAnswers.update(answers => {
+        const newAnswers = new Map(answers);
+        newAnswers.delete(q.id);
+        return newAnswers;
+      });
+      this.submittedQuestions.update(set => {
+        const newSet = new Set(set);
+        newSet.delete(q.id);
+        return newSet;
+      });
+    }
+  }
+
   submitCurrentQuestion() {
     const q = this.currentQuestion();
     if (q) {
