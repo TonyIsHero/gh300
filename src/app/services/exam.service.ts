@@ -21,6 +21,7 @@ export class ExamService {
   readonly currentIndex = signal<number>(0);
   readonly userAnswers = signal<Map<number, number[]>>(new Map());
   readonly submittedQuestions = signal<Set<number>>(new Set());
+  readonly flaggedQuestions = signal<Set<number>>(new Set());
   readonly isExamFinished = signal<boolean>(false);
 
   // Computed
@@ -94,6 +95,7 @@ export class ExamService {
         currentIndex: this.currentIndex(),
         userAnswers: Array.from(this.userAnswers().entries()),
         submittedQuestions: Array.from(this.submittedQuestions().values()),
+        flaggedQuestions: Array.from(this.flaggedQuestions().values()),
         isExamFinished: this.isExamFinished(),
         activeQuestionsIds: this.activeQuestions().map(q => q.id)
       };
@@ -114,6 +116,7 @@ export class ExamService {
           if (parsed.currentIndex !== undefined) this.currentIndex.set(parsed.currentIndex);
           if (parsed.userAnswers) this.userAnswers.set(new Map(parsed.userAnswers));
           if (parsed.submittedQuestions) this.submittedQuestions.set(new Set(parsed.submittedQuestions));
+          if (parsed.flaggedQuestions) this.flaggedQuestions.set(new Set(parsed.flaggedQuestions));
           if (parsed.isExamFinished !== undefined) this.isExamFinished.set(parsed.isExamFinished);
           if (parsed.activeQuestionsIds) {
              const allQ = this.allQuestions();
@@ -152,6 +155,7 @@ export class ExamService {
     this.currentIndex.set(0);
     this.userAnswers.set(new Map());
     this.submittedQuestions.set(new Set());
+    this.flaggedQuestions.set(new Set());
     this.isExamFinished.set(false);
   }
 
@@ -212,6 +216,21 @@ export class ExamService {
       this.currentIndex.update(i => i + 1);
     } else {
       this.isExamFinished.set(true);
+    }
+  }
+
+  toggleFlag() {
+    const q = this.currentQuestion();
+    if (q) {
+      this.flaggedQuestions.update(set => {
+        const newSet = new Set(set);
+        if (newSet.has(q.id)) {
+          newSet.delete(q.id);
+        } else {
+          newSet.add(q.id);
+        }
+        return newSet;
+      });
     }
   }
 

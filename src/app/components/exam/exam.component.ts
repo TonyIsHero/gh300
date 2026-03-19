@@ -1,4 +1,4 @@
-import { Component, inject, effect } from '@angular/core';
+import { Component, inject, effect, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { ExamService } from '../../services/exam.service';
@@ -24,6 +24,9 @@ import { ExamService } from '../../services/exam.service';
                       }">
                 <span class="text-sm font-semibold">{{ i + 1 }}</span>
               </button>
+              @if (examService.mode() === 'mock' && isFlagged(q.id)) {
+                <div class="absolute -top-1 -right-1 w-3.5 h-3.5 bg-red-500 rounded-full border-2 border-slate-50 dark:border-slate-900 shadow-sm pointer-events-none"></div>
+              }
             </div>
           }
         </div>
@@ -62,9 +65,23 @@ import { ExamService } from '../../services/exam.service';
               </div>
             }
 
-            <p class="text-slate-500 dark:text-slate-400 font-medium text-sm md:text-base">
-              Question {{ examService.currentIndex() + 1 }} of {{ examService.totalQuestions() }}
-            </p>
+            <div class="flex items-center gap-3">
+              <p class="text-slate-500 dark:text-slate-400 font-medium text-sm md:text-base">
+                Question {{ examService.currentIndex() + 1 }} of {{ examService.totalQuestions() }}
+              </p>
+              @if (examService.currentQuestion(); as q) {
+                @if (examService.mode() === 'mock') {
+                  <button (click)="toggleFlag()" class="flex items-center gap-1.5 px-2.5 py-1 text-xs md:text-sm font-medium rounded-md transition-all active:scale-95"
+                    [ngClass]="isFlagged(q.id) ? 'bg-red-100 text-red-600 dark:bg-red-500/20 dark:text-red-400 ring-1 ring-red-500/30' : 'bg-slate-100 text-slate-500 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700'">
+                    <svg class="w-3.5 h-3.5 md:w-4 md:h-4" [ngClass]="isFlagged(q.id) ? 'fill-current' : 'fill-none stroke-current'" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+                       <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path>
+                       <line x1="4" y1="22" x2="4" y2="15"></line>
+                    </svg>
+                    <span>{{ isFlagged(q.id) ? 'Flagged' : 'Flag' }}</span>
+                  </button>
+                }
+              }
+            </div>
           </div>
           <div class="w-full lg:w-64">
             <div class="relative w-full h-3 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden border border-slate-300 dark:border-slate-700">
@@ -76,8 +93,9 @@ import { ExamService } from '../../services/exam.service';
         </header>
 
         <!-- Question Area -->
-        @if (examService.currentQuestion(); as q) {
-          <div class="bg-white dark:bg-slate-800/80 rounded-2xl md:rounded-3xl p-4 md:p-6 lg:p-10 shadow-lg md:shadow-xl dark:shadow-2xl border border-slate-200 dark:border-slate-700/50 backdrop-blur-sm">
+        @for (q of [examService.currentQuestion()]; track q?.id) {
+          @if (q) {
+            <div class="bg-white dark:bg-slate-800/80 rounded-2xl md:rounded-3xl p-4 md:p-6 lg:p-10 shadow-lg md:shadow-xl dark:shadow-2xl border border-slate-200 dark:border-slate-700/50 backdrop-blur-sm animate-in slide-in-from-right-8 fade-in duration-500">
             
             <div class="flex items-start gap-3 md:gap-4 mb-6 md:mb-8">
                <span class="flex-shrink-0 flex items-center justify-center w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 font-bold border border-blue-200 dark:border-blue-500/30 text-sm md:text-base">
@@ -213,6 +231,7 @@ import { ExamService } from '../../services/exam.service';
 
             </div>
           </div>
+          }
         }
         </div>
       </div>
@@ -239,6 +258,52 @@ export class ExamComponent {
 
   isAttempted(id: number) {
     return this.examService.submittedQuestions().has(id);
+  }
+
+  isFlagged(id: number) {
+    return this.examService.flaggedQuestions().has(id);
+  }
+
+  toggleFlag() {
+    this.examService.toggleFlag();
+  }
+
+  @HostListener('window:keydown', ['$event'])
+  handleKeyboardEvent(event: KeyboardEvent) {
+    if (event.ctrlKey || event.metaKey || event.altKey) return;
+    if (this.examService.isExamFinished()) return;
+
+    const key = event.key;
+    const q = this.examService.currentQuestion();
+    if (!q) return;
+
+    if (!this.examService.hasSubmittedCurrent()) {
+      if (key >= '1' && key <= q.options.length.toString()) {
+         this.toggleOption(parseInt(key) - 1, q.type);
+      } else if (key.toLowerCase() === 'a') {
+         if (q.options.length >= 1) this.toggleOption(0, q.type);
+      } else if (key.toLowerCase() === 'b') {
+         if (q.options.length >= 2) this.toggleOption(1, q.type);
+      } else if (key.toLowerCase() === 'c') {
+         if (q.options.length >= 3) this.toggleOption(2, q.type);
+      } else if (key.toLowerCase() === 'd') {
+         if (q.options.length >= 4) this.toggleOption(3, q.type);
+      } else if (key === 'Enter') {
+         this.submit();
+      } else if (key === 'ArrowRight') {
+         this.skip();
+         event.preventDefault();
+      } else if (key.toLowerCase() === 'f') {
+         if (this.examService.mode() === 'mock') {
+            this.toggleFlag();
+         }
+      }
+    } else {
+      if (key === 'Enter' || key === 'ArrowRight') {
+         this.next();
+         event.preventDefault();
+      }
+    }
   }
 
   skip() {
