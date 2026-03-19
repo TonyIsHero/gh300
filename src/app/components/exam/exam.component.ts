@@ -8,10 +8,10 @@ import { ExamService } from '../../services/exam.service';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="h-screen w-full bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 flex overflow-hidden transition-colors duration-300 relative">
+    <div class="h-screen w-full bg-slate-50 dark:bg-black text-slate-800 dark:text-slate-200 flex overflow-hidden transition-colors duration-300 relative">
       
       <!-- Left Navigation Panel -->
-      <aside class="w-[60px] md:w-[80px] flex-shrink-0 border-r border-slate-200 dark:border-slate-700/50 bg-slate-50 dark:bg-slate-900/50 overflow-y-auto custom-scrollbar">
+      <aside class="w-[60px] md:w-[80px] flex-shrink-0 border-r border-slate-200 dark:border-white/10 bg-[#f8f9fa] dark:bg-[#0f0f13] overflow-y-auto custom-scrollbar">
         <div class="flex flex-col items-center py-6 space-y-4">
           @for (q of examService.activeQuestions(); track q.id; let i = $index) {
             <div class="relative group">
@@ -37,16 +37,19 @@ import { ExamService } from '../../services/exam.service';
         <div class="max-w-4xl mx-auto space-y-4 md:space-y-6 lg:space-y-10">
         
         <!-- Header / Progress -->
-        <header class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 md:gap-6 pb-4 md:pb-6 border-b border-slate-200 dark:border-slate-700/50">
+        <header class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 md:gap-6 pb-4 md:pb-6 border-b border-slate-200 dark:border-white/10">
           <div class="flex-1 space-y-1 md:space-y-2">
-            <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3 md:gap-4 mb-2">
+              <button (click)="showQuitModal = true" class="p-2 -ml-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors focus:outline-none" title="Go Back">
+                <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+              </button>
               <h1 class="text-xl md:text-2xl lg:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-500 dark:from-blue-400 dark:to-indigo-300">
                 GH 300 Preparation Exam
               </h1>
             </div>
 
             @if (examService.mode() === 'mock') {
-              <div class="md:fixed md:top-4 md:right-20 md:z-50 inline-flex items-center gap-1.5 md:gap-2 bg-slate-900 px-3 py-1.5 md:px-5 md:py-2.5 rounded-full border border-slate-700 shadow md:shadow-2xl backdrop-blur-md transition-all duration-500 w-max mt-1 md:mt-0">
+              <div class="md:fixed md:top-4 md:right-20 md:z-50 inline-flex items-center gap-1.5 md:gap-2 bg-slate-900 dark:bg-white/10 px-3 py-1.5 md:px-5 md:py-2.5 rounded-full border border-slate-700 dark:border-white/5 shadow md:shadow-2xl backdrop-blur-md transition-all duration-500 w-max mt-1 md:mt-0">
                 <svg class="w-4 h-4 md:w-5 md:h-5 transition-colors duration-500" [ngClass]="{
                   'text-red-500': examService.timeRemaining() < 900,
                   'text-yellow-400': examService.timeRemaining() >= 900 && examService.timeRemaining() < 3600,
@@ -95,10 +98,10 @@ import { ExamService } from '../../services/exam.service';
         <!-- Question Area -->
         @for (q of [examService.currentQuestion()]; track q?.id) {
           @if (q) {
-            <div class="bg-white dark:bg-slate-800/80 rounded-2xl md:rounded-3xl p-4 md:p-6 lg:p-10 shadow-lg md:shadow-xl dark:shadow-2xl border border-slate-200 dark:border-slate-700/50 backdrop-blur-sm animate-in slide-in-from-right-8 fade-in duration-500">
+            <div class="bg-white dark:bg-[#0f0f13] rounded-2xl md:rounded-3xl p-4 md:p-6 lg:p-10 shadow-lg md:shadow-xl dark:shadow-2xl border border-slate-200 dark:border-white/10 backdrop-blur-sm animate-in slide-in-from-right-8 fade-in duration-500">
             
             <div class="flex items-start gap-3 md:gap-4 mb-6 md:mb-8">
-               <span class="flex-shrink-0 flex items-center justify-center w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 font-bold border border-blue-200 dark:border-blue-500/30 text-sm md:text-base">
+               <span class="flex-shrink-0 flex items-center justify-center w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl bg-blue-100 dark:bg-white/10 text-blue-600 dark:text-white font-bold border border-blue-200 dark:border-white/5 text-sm md:text-base">
                  {{ examService.currentIndex() + 1 }}
                </span>
                <h2 class="text-lg md:text-xl lg:text-2xl font-semibold leading-relaxed pt-1 text-slate-800 dark:text-white">
@@ -115,11 +118,11 @@ import { ExamService } from '../../services/exam.service';
                 <label 
                   class="relative flex items-center p-3.5 md:p-5 rounded-xl md:rounded-2xl border cursor-pointer transition-all duration-200 group overflow-hidden"
                   [ngClass]="{
-                    'border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-700/50': !isSelected(i) && !examService.hasSubmittedCurrent(),
-                    'border-blue-500 bg-blue-50 dark:bg-blue-500/10 shadow-[inset_0_0_0_1px_rgba(59,130,246,0.5)]': isSelected(i) && !examService.hasSubmittedCurrent(),
+                    'border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-700/50': !isSelected(i) && (!examService.hasSubmittedCurrent() || examService.mode() === 'mock'),
+                    'border-blue-500 bg-blue-50 dark:bg-blue-500/10 shadow-[inset_0_0_0_1px_rgba(59,130,246,0.5)]': isSelected(i) && (!examService.hasSubmittedCurrent() || examService.mode() === 'mock'),
                     'opacity-75 cursor-default': examService.hasSubmittedCurrent(),
-                    'border-red-500 bg-red-50 dark:bg-red-500/10': isSelected(i) && examService.hasSubmittedCurrent() && !isCorrectOption(i),
-                    'border-emerald-500 bg-emerald-50 dark:bg-emerald-500/10': isCorrectOption(i) && examService.hasSubmittedCurrent()
+                    'border-red-500 bg-red-50 dark:bg-red-500/10': isSelected(i) && examService.hasSubmittedCurrent() && !isCorrectOption(i) && examService.mode() !== 'mock',
+                    'border-emerald-500 bg-emerald-50 dark:bg-emerald-500/10': isCorrectOption(i) && examService.hasSubmittedCurrent() && examService.mode() !== 'mock'
                   }"
                   (click)="toggleOption(i, q.type)">
                   
@@ -133,7 +136,7 @@ import { ExamService } from '../../services/exam.service';
                     } @else {
                       <div class="w-5 h-5 md:w-6 md:h-6 rounded border-2 flex items-center justify-center transition-colors shadow-sm"
                            [ngClass]="getControlClass(i)">
-                         <svg *ngIf="isSelected(i) || (examService.hasSubmittedCurrent() && isCorrectOption(i))" 
+                         <svg *ngIf="isSelected(i) || (examService.hasSubmittedCurrent() && isCorrectOption(i) && examService.mode() !== 'mock')" 
                               class="w-3.5 h-3.5 md:w-4 md:h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
                          </svg>
@@ -148,7 +151,7 @@ import { ExamService } from '../../services/exam.service';
                   </span>
 
                   <!-- Validation Icons -->
-                  @if (examService.hasSubmittedCurrent()) {
+                  @if (examService.hasSubmittedCurrent() && examService.mode() !== 'mock') {
                     <div class="ml-4 flex-shrink-0 animate-in fade-in zoom-in duration-300">
                       @if (isCorrectOption(i)) {
                         <div class="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shadow-[0_0_15px_rgba(16,185,129,0.3)] border border-emerald-200 dark:border-emerald-500/20">
@@ -174,7 +177,7 @@ import { ExamService } from '../../services/exam.service';
               
               <!-- Result Text -->
               <div class="h-8 md:h-10 flex items-center">
-                @if (examService.hasSubmittedCurrent()) {
+                @if (examService.hasSubmittedCurrent() && examService.mode() !== 'mock') {
                   <span class="text-sm md:text-lg font-bold flex items-center gap-1.5 md:gap-2 animate-in slide-in-from-left-4 fade-in duration-300"
                         [ngClass]="examService.currentQuestionIsCorrect() ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'">
                     @if (examService.currentQuestionIsCorrect()) {
@@ -194,6 +197,13 @@ import { ExamService } from '../../services/exam.service';
 
               <!-- Buttons -->
               <div class="flex space-x-2 md:space-x-4">
+                @if (examService.mode() === 'mock') {
+                   <button (click)="resetSelection()"
+                           [disabled]="examService.currentSelection().length === 0"
+                           class="px-4 md:px-6 py-2.5 md:py-3.5 rounded-lg md:rounded-xl text-sm md:text-base font-bold bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-700 dark:hover:text-slate-200 focus:outline-none transition-all active:scale-95 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                     Reset
+                   </button>
+                }
                 @if (!examService.hasSubmittedCurrent()) {
                   @if (examService.currentIndex() === examService.totalQuestions() - 1) {
                     <button (click)="finishExam()"
@@ -236,6 +246,29 @@ import { ExamService } from '../../services/exam.service';
         </div>
       </div>
     </div>
+
+    <!-- Quit Modal Overly -->
+    @if (showQuitModal) {
+      <div class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 dark:bg-black/60 backdrop-blur-md p-4 animate-in fade-in duration-200">
+        <div class="bg-white dark:bg-[#0f0f13] rounded-3xl shadow-2xl max-w-sm w-full p-6 animate-in zoom-in-95 duration-200 border border-slate-200 dark:border-white/10">
+          <div class="w-12 h-12 rounded-full bg-red-100 dark:bg-red-500/20 flex items-center justify-center mb-4 text-red-600 dark:text-red-400">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2">Quit session?</h3>
+          <p class="text-slate-600 dark:text-slate-400 mb-8 text-sm md:text-base">Quit session and go back to main menu?</p>
+          <div class="flex items-center justify-end gap-3">
+            <button (click)="showQuitModal = false" class="px-5 py-2.5 rounded-xl font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors active:scale-95">
+              Cancel
+            </button>
+            <button (click)="confirmQuit()" class="px-5 py-2.5 rounded-xl font-bold bg-red-600 text-white hover:bg-red-500 transition-colors shadow-lg shadow-red-600/20 active:scale-95">
+              OK
+            </button>
+          </div>
+        </div>
+      </div>
+    }
   `
 })
 export class ExamComponent {
@@ -254,6 +287,18 @@ export class ExamComponent {
     const m = Math.floor(seconds / 60);
     const s = seconds % 60;
     return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  }
+
+  showQuitModal = false;
+
+  confirmQuit() {
+    this.examService.clearProgress();
+    this.examService.stopTimer();
+    this.router.navigate(['/']);
+  }
+
+  resetSelection() {
+    this.examService.clearCurrentSelection();
   }
 
   isAttempted(id: number) {
@@ -297,11 +342,19 @@ export class ExamComponent {
          if (this.examService.mode() === 'mock') {
             this.toggleFlag();
          }
+      } else if (key.toLowerCase() === 'r') {
+         if (this.examService.mode() === 'mock') {
+            this.resetSelection();
+         }
       }
     } else {
       if (key === 'Enter' || key === 'ArrowRight') {
          this.next();
          event.preventDefault();
+      } else if (key.toLowerCase() === 'r' && this.examService.mode() === 'mock') {
+         this.resetSelection();
+      } else if (key.toLowerCase() === 'f' && this.examService.mode() === 'mock') {
+         this.toggleFlag();
       }
     }
   }
@@ -347,22 +400,24 @@ export class ExamComponent {
   // --- Dynamic Styling Helpers ---
   getControlClass(index: number) {
     const submitted = this.examService.hasSubmittedCurrent();
+    const mockMode = this.examService.mode() === 'mock';
     const selected = this.isSelected(index);
     const correct = this.isCorrectOption(index);
 
-    if (!submitted) {
+    if (!submitted || mockMode) {
       if (selected) return 'border-blue-500 bg-blue-500';
-      return 'border-slate-300 dark:border-slate-500 bg-white dark:bg-slate-800 group-hover:border-blue-400 dark:group-hover:border-blue-400 group-hover:bg-slate-50 dark:group-hover:bg-slate-700';
+      return 'border-slate-300 dark:border-white/20 bg-white dark:bg-[#0f0f13] group-hover:border-blue-400 dark:group-hover:border-white/40 group-hover:bg-slate-50 dark:group-hover:bg-white/5';
     } else {
       if (correct) return 'border-emerald-500 bg-emerald-500';
       if (selected && !correct) return 'border-red-500 bg-red-500';
-      return 'border-slate-200 dark:border-slate-600 bg-slate-100 dark:bg-slate-800 opacity-50';
+      return 'border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-[#0f0f13] opacity-50';
     }
   }
 
   getControlDotClass(index: number) {
     const submitted = this.examService.hasSubmittedCurrent();
-    if (!submitted) {
+    const mockMode = this.examService.mode() === 'mock';
+    if (!submitted || mockMode) {
       return this.isSelected(index) ? 'bg-white' : 'bg-transparent';
     } else {
       if (this.isCorrectOption(index)) return 'bg-white';
@@ -372,10 +427,11 @@ export class ExamComponent {
 
   getTextClass(index: number) {
     const submitted = this.examService.hasSubmittedCurrent();
+    const mockMode = this.examService.mode() === 'mock';
     const selected = this.isSelected(index);
     const correct = this.isCorrectOption(index);
 
-    if (!submitted) {
+    if (!submitted || mockMode) {
       return selected ? 'text-slate-900 dark:text-white' : 'text-slate-600 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-slate-200';
     } else {
       if (correct) return 'text-emerald-600 dark:text-emerald-300 font-semibold';

@@ -5,23 +5,27 @@ import { Router } from '@angular/router';
   selector: 'app-landing',
   standalone: true,
   template: `
-    <div class="min-h-screen bg-slate-50 dark:bg-slate-900 flex items-center justify-center p-4 transition-colors duration-300">
-      <div class="max-w-md w-full bg-white dark:bg-slate-800 rounded-3xl shadow-2xl p-8 border border-slate-200 dark:border-white/10 text-center transform transition-all hover:scale-[1.02]">
-        <div class="w-24 h-24 mx-auto flex items-center justify-center mb-6 bg-slate-50 dark:bg-slate-700/50 rounded-2xl border border-slate-200 dark:border-slate-600/50 shadow-inner">
-          <img src="images/github-copilot-icon.svg" alt="GitHub Copilot Icon" class="w-16 h-16 object-contain drop-shadow-md">
-        </div>
-        <h1 class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-500 dark:from-blue-400 dark:to-indigo-300 mb-4 tracking-tight leading-tight">
-          Microsoft GitHub Copilot GH 300
+    <div class="min-h-screen bg-white dark:bg-black flex flex-col items-center justify-center p-4 transition-colors duration-500 relative overflow-hidden">
+      <!-- Spotlight Effect -->
+      <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+        <div class="w-[60vw] h-[60vw] max-w-[800px] max-h-[800px] bg-slate-100 dark:bg-white/5 rounded-full blur-[100px] opacity-70"></div>
+      </div>
+
+      <div class="z-10 text-center flex flex-col items-center max-w-2xl px-4 animate-in fade-in slide-in-from-bottom-8 duration-700">
+        <h1 class="text-7xl md:text-9xl font-black text-slate-900 dark:text-white tracking-tighter mb-6">
+          GH 300<span class="text-slate-400 dark:text-white/30">.</span>
         </h1>
-        <p class="text-slate-600 dark:text-slate-300 text-lg mb-10 font-medium">Welcome to GH 300 preparation exam</p>
+        <p class="text-lg md:text-2xl text-slate-500 dark:text-slate-400 font-medium mb-12 tracking-tight max-w-lg mx-auto">
+          The definitive preparation experience for Microsoft GitHub Copilot.
+        </p>
         
-        <div class="space-y-4">
-          <button (click)="selectMode('practise')" class="group relative w-full flex justify-center py-4 px-4 border border-transparent text-lg font-bold rounded-xl text-blue-700 bg-blue-100 dark:text-blue-200 dark:bg-blue-900/50 hover:bg-blue-200 dark:hover:bg-blue-800/60 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 focus:ring-offset-white dark:focus:ring-offset-slate-900 transition-all shadow-md">
-            Practise
+        <div class="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
+          <button (click)="selectMode('mock')" class="w-full sm:w-auto px-10 py-4 md:py-5 rounded-full text-base md:text-lg font-semibold bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:scale-105 active:scale-95 transition-all duration-300 shadow-2xl shadow-slate-900/20 dark:shadow-white/10">
+            Mock Exam
           </button>
           
-          <button (click)="selectMode('mock')" class="group relative w-full flex justify-center py-4 px-4 border border-transparent text-lg font-bold rounded-xl text-white bg-blue-600 hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 focus:ring-offset-white dark:focus:ring-offset-slate-900 transition-all shadow-lg hover:shadow-blue-500/25">
-            Mock Test
+          <button (click)="selectMode('practise')" class="w-full sm:w-auto px-10 py-4 md:py-5 rounded-full text-base md:text-lg font-semibold bg-slate-100 dark:bg-white/10 text-slate-800 dark:text-white border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/20 hover:scale-105 active:scale-95 transition-all duration-300 backdrop-blur-md">
+            Practise Mode
           </button>
         </div>
       </div>
