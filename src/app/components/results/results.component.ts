@@ -18,7 +18,7 @@ import { ExamService } from '../../services/exam.service';
 
         <div class="relative z-10">
           <h1 class="text-3xl lg:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-2">Exam Results</h1>
-          <p class="text-slate-600 dark:text-slate-400 font-medium mb-12">You have completed the GH 300 Preparation Exam</p>
+          <p class="text-slate-600 dark:text-slate-400 font-medium mb-12">You have completed the GH 300 {{ examService.mode() === 'mock' ? 'Mock' : 'Practise' }} Exam</p>
           
           <div class="relative w-48 h-48 mx-auto mb-12">
             <!-- Circular Progress Background -->

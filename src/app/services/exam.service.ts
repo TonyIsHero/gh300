@@ -2,6 +2,8 @@ import { Injectable, signal, computed, effect } from '@angular/core';
 import { Question } from '../models/question.model';
 import { EXAM_QUESTIONS } from '../data/questions';
 
+export type ExamMode = 'practise' | 'mock';
+
 @Injectable({
   providedIn: 'root'
 })
@@ -12,6 +14,10 @@ export class ExamService {
   // The user requested all 123 questions to be there in the same order as they are in the dump.
   readonly activeQuestions = signal<Question[]>(EXAM_QUESTIONS);
   
+  readonly mode = signal<ExamMode>('practise');
+  readonly timeRemaining = signal<number>(120 * 60); // 120 minutes in seconds
+  private timerInterval: any;
+
   readonly currentIndex = signal<number>(0);
   readonly userAnswers = signal<Map<number, number[]>>(new Map());
   readonly submittedQuestions = signal<Set<number>>(new Set());
@@ -83,10 +89,13 @@ export class ExamService {
 
     effect(() => {
       const state = {
+        mode: this.mode(),
+        timeRemaining: this.timeRemaining(),
         currentIndex: this.currentIndex(),
         userAnswers: Array.from(this.userAnswers().entries()),
         submittedQuestions: Array.from(this.submittedQuestions().values()),
-        isExamFinished: this.isExamFinished()
+        isExamFinished: this.isExamFinished(),
+        activeQuestionsIds: this.activeQuestions().map(q => q.id)
       };
       if (typeof window !== 'undefined' && window.localStorage) {
         localStorage.setItem('gh300_progress', JSON.stringify(state));
@@ -100,10 +109,22 @@ export class ExamService {
       if (saved) {
         try {
           const parsed = JSON.parse(saved);
+          if (parsed.mode) this.mode.set(parsed.mode);
+          if (parsed.timeRemaining !== undefined) this.timeRemaining.set(parsed.timeRemaining);
           if (parsed.currentIndex !== undefined) this.currentIndex.set(parsed.currentIndex);
           if (parsed.userAnswers) this.userAnswers.set(new Map(parsed.userAnswers));
           if (parsed.submittedQuestions) this.submittedQuestions.set(new Set(parsed.submittedQuestions));
           if (parsed.isExamFinished !== undefined) this.isExamFinished.set(parsed.isExamFinished);
+          if (parsed.activeQuestionsIds) {
+             const allQ = this.allQuestions();
+             const activeQ = parsed.activeQuestionsIds.map((id: number) => allQ.find(q => q.id === id)).filter((q: any) => q);
+             if (activeQ.length > 0) {
+               this.activeQuestions.set(activeQ);
+             }
+          }
+          if (this.mode() === 'mock' && !this.isExamFinished()) {
+             this.startTimer();
+          }
         } catch (e) {
           console.error('Error loading progress', e);
         }
@@ -117,12 +138,40 @@ export class ExamService {
     }
   }
 
-  startExam() {
-    this.activeQuestions.set(this.allQuestions());
+  startExam(mode: ExamMode = 'practise') {
+    this.mode.set(mode);
+    if (mode === 'mock') {
+       const shuffled = [...this.allQuestions()].sort(() => 0.5 - Math.random());
+       this.activeQuestions.set(shuffled.slice(0, 54));
+       this.timeRemaining.set(120 * 60);
+       this.startTimer();
+    } else {
+       this.activeQuestions.set(this.allQuestions());
+       this.stopTimer();
+    }
     this.currentIndex.set(0);
     this.userAnswers.set(new Map());
     this.submittedQuestions.set(new Set());
     this.isExamFinished.set(false);
+  }
+
+  private startTimer() {
+    this.stopTimer();
+    this.timerInterval = setInterval(() => {
+       if (this.timeRemaining() > 0) {
+          this.timeRemaining.update(v => v - 1);
+       } else {
+          this.stopTimer();
+          this.isExamFinished.set(true);
+       }
+    }, 1000);
+  }
+
+  stopTimer() {
+    if (this.timerInterval) {
+       clearInterval(this.timerInterval);
+       this.timerInterval = null;
+    }
   }
 
   toggleAnswer(optionIndex: number, type: 'single' | 'multiple') {
@@ -173,6 +222,7 @@ export class ExamService {
   }
 
   resetExam() {
-    this.startExam();
+    this.stopTimer();
+    this.startExam(this.mode());
   }
 }

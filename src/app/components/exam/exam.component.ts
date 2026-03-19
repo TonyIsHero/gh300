@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { ExamService } from '../../services/exam.service';
@@ -8,7 +8,7 @@ import { ExamService } from '../../services/exam.service';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="h-screen w-full bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 flex overflow-hidden transition-colors duration-300">
+    <div class="h-screen w-full bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 flex overflow-hidden transition-colors duration-300 relative">
       
       <!-- Left Navigation Panel -->
       <aside class="w-[60px] md:w-[80px] flex-shrink-0 border-r border-slate-200 dark:border-slate-700/50 bg-slate-50 dark:bg-slate-900/50 overflow-y-auto custom-scrollbar">
@@ -30,16 +30,39 @@ import { ExamService } from '../../services/exam.service';
       </aside>
 
       <!-- Main Content -->
-      <div class="flex-1 overflow-y-auto py-10 px-4 md:px-10 custom-scrollbar">
-        <div class="max-w-4xl mx-auto space-y-6 lg:space-y-10">
+      <div class="flex-1 overflow-y-auto py-6 px-3 md:py-10 md:px-10 custom-scrollbar">
+        <div class="max-w-4xl mx-auto space-y-4 md:space-y-6 lg:space-y-10">
         
         <!-- Header / Progress -->
-        <header class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-slate-200 dark:border-slate-700/50">
-          <div class="flex-1 space-y-2">
-            <h1 class="text-2xl lg:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-500 dark:from-blue-400 dark:to-indigo-300">
-              GH 300 Preparation Exam
-            </h1>
-            <p class="text-slate-500 dark:text-slate-400 font-medium">
+        <header class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 md:gap-6 pb-4 md:pb-6 border-b border-slate-200 dark:border-slate-700/50">
+          <div class="flex-1 space-y-1 md:space-y-2">
+            <div class="flex items-center justify-between">
+              <h1 class="text-xl md:text-2xl lg:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-500 dark:from-blue-400 dark:to-indigo-300">
+                GH 300 Preparation Exam
+              </h1>
+            </div>
+
+            @if (examService.mode() === 'mock') {
+              <div class="md:fixed md:top-4 md:right-20 md:z-50 inline-flex items-center gap-1.5 md:gap-2 bg-slate-900 px-3 py-1.5 md:px-5 md:py-2.5 rounded-full border border-slate-700 shadow md:shadow-2xl backdrop-blur-md transition-all duration-500 w-max mt-1 md:mt-0">
+                <svg class="w-4 h-4 md:w-5 md:h-5 transition-colors duration-500" [ngClass]="{
+                  'text-red-500': examService.timeRemaining() < 900,
+                  'text-yellow-400': examService.timeRemaining() >= 900 && examService.timeRemaining() < 3600,
+                  'text-white': examService.timeRemaining() >= 3600
+                }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <span class="font-mono text-sm md:text-xl font-bold tracking-wider transition-colors duration-500" 
+                      [ngClass]="{
+                        'text-red-500': examService.timeRemaining() < 900,
+                        'text-yellow-400': examService.timeRemaining() >= 900 && examService.timeRemaining() < 3600,
+                        'text-white': examService.timeRemaining() >= 3600
+                      }">
+                  {{ formatTime(examService.timeRemaining()) }}
+                </span>
+              </div>
+            }
+
+            <p class="text-slate-500 dark:text-slate-400 font-medium text-sm md:text-base">
               Question {{ examService.currentIndex() + 1 }} of {{ examService.totalQuestions() }}
             </p>
           </div>
@@ -54,25 +77,25 @@ import { ExamService } from '../../services/exam.service';
 
         <!-- Question Area -->
         @if (examService.currentQuestion(); as q) {
-          <div class="bg-white dark:bg-slate-800/80 rounded-3xl p-6 lg:p-10 shadow-xl dark:shadow-2xl border border-slate-200 dark:border-slate-700/50 backdrop-blur-sm">
+          <div class="bg-white dark:bg-slate-800/80 rounded-2xl md:rounded-3xl p-4 md:p-6 lg:p-10 shadow-lg md:shadow-xl dark:shadow-2xl border border-slate-200 dark:border-slate-700/50 backdrop-blur-sm">
             
-            <div class="flex items-start gap-4 mb-8">
-               <span class="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 font-bold border border-blue-200 dark:border-blue-500/30">
+            <div class="flex items-start gap-3 md:gap-4 mb-6 md:mb-8">
+               <span class="flex-shrink-0 flex items-center justify-center w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 font-bold border border-blue-200 dark:border-blue-500/30 text-sm md:text-base">
                  {{ examService.currentIndex() + 1 }}
                </span>
-               <h2 class="text-xl lg:text-2xl font-semibold leading-relaxed pt-1 text-slate-800 dark:text-white">
+               <h2 class="text-lg md:text-xl lg:text-2xl font-semibold leading-relaxed pt-1 text-slate-800 dark:text-white">
                  {{ q.text }}
                </h2>
             </div>
 
-            <div class="space-y-4">
-              <span class="inline-block px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-700 text-xs font-semibold tracking-wider text-slate-500 dark:text-slate-300 uppercase mb-2">
+            <div class="space-y-3 md:space-y-4">
+              <span class="inline-block px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-700 text-[10px] md:text-xs font-semibold tracking-wider text-slate-500 dark:text-slate-300 uppercase mb-1 md:mb-2">
                 {{ q.type === 'single' ? 'Pick one' : 'Pick multiple' }}
               </span>
 
               @for (opt of q.options; track $index; let i = $index) {
                 <label 
-                  class="relative flex items-center p-5 rounded-2xl border cursor-pointer transition-all duration-200 group overflow-hidden"
+                  class="relative flex items-center p-3.5 md:p-5 rounded-xl md:rounded-2xl border cursor-pointer transition-all duration-200 group overflow-hidden"
                   [ngClass]="{
                     'border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-700/50': !isSelected(i) && !examService.hasSubmittedCurrent(),
                     'border-blue-500 bg-blue-50 dark:bg-blue-500/10 shadow-[inset_0_0_0_1px_rgba(59,130,246,0.5)]': isSelected(i) && !examService.hasSubmittedCurrent(),
@@ -83,17 +106,17 @@ import { ExamService } from '../../services/exam.service';
                   (click)="toggleOption(i, q.type)">
                   
                   <!-- Checkbox / Radio Visual -->
-                  <div class="flex-shrink-0 mr-4">
+                  <div class="flex-shrink-0 mr-3 md:mr-4">
                     @if (q.type === 'single') {
-                      <div class="w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors shadow-sm"
+                      <div class="w-5 h-5 md:w-6 md:h-6 rounded-full border-2 flex items-center justify-center transition-colors shadow-sm"
                            [ngClass]="getControlClass(i)">
-                         <div class="w-2.5 h-2.5 rounded-full" [ngClass]="getControlDotClass(i)"></div>
+                         <div class="w-2 h-2 md:w-2.5 md:h-2.5 rounded-full" [ngClass]="getControlDotClass(i)"></div>
                       </div>
                     } @else {
-                      <div class="w-6 h-6 rounded border-2 flex items-center justify-center transition-colors shadow-sm"
+                      <div class="w-5 h-5 md:w-6 md:h-6 rounded border-2 flex items-center justify-center transition-colors shadow-sm"
                            [ngClass]="getControlClass(i)">
                          <svg *ngIf="isSelected(i) || (examService.hasSubmittedCurrent() && isCorrectOption(i))" 
-                              class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              class="w-3.5 h-3.5 md:w-4 md:h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
                          </svg>
                       </div>
@@ -101,7 +124,7 @@ import { ExamService } from '../../services/exam.service';
                   </div>
 
                   <!-- Text -->
-                  <span class="flex-1 text-lg font-medium"
+                  <span class="flex-1 text-base md:text-lg font-medium"
                         [ngClass]="getTextClass(i)">
                     {{ opt }}
                   </span>
@@ -132,17 +155,17 @@ import { ExamService } from '../../services/exam.service';
             <div class="mt-10 flex items-center justify-between border-t border-slate-200 dark:border-slate-700/50 pt-8">
               
               <!-- Result Text -->
-              <div class="h-10 flex items-center">
+              <div class="h-8 md:h-10 flex items-center">
                 @if (examService.hasSubmittedCurrent()) {
-                  <span class="text-lg font-bold flex items-center gap-2 animate-in slide-in-from-left-4 fade-in duration-300"
+                  <span class="text-sm md:text-lg font-bold flex items-center gap-1.5 md:gap-2 animate-in slide-in-from-left-4 fade-in duration-300"
                         [ngClass]="examService.currentQuestionIsCorrect() ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'">
                     @if (examService.currentQuestionIsCorrect()) {
-                      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                       </svg>
-                      Correct Answer!
+                      Correct!
                     } @else {
-                      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                       </svg>
                       Incorrect
@@ -152,35 +175,35 @@ import { ExamService } from '../../services/exam.service';
               </div>
 
               <!-- Buttons -->
-              <div class="flex space-x-4">
+              <div class="flex space-x-2 md:space-x-4">
                 @if (!examService.hasSubmittedCurrent()) {
                   @if (examService.currentIndex() === examService.totalQuestions() - 1) {
                     <button (click)="finishExam()"
-                            class="px-8 py-3.5 rounded-xl font-bold bg-emerald-600 text-white hover:bg-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all shadow-lg active:scale-95">
-                      Finish Exam
+                            class="px-5 md:px-8 py-2.5 md:py-3.5 rounded-lg md:rounded-xl text-sm md:text-base font-bold bg-emerald-600 text-white hover:bg-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all shadow-lg active:scale-95">
+                      Finish
                     </button>
                   } @else {
                     <button (click)="skip()"
-                            class="px-8 py-3.5 rounded-xl font-bold bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-600 hover:bg-slate-300 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-400 dark:focus:ring-slate-500 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-slate-900 transition-all active:scale-95 shadow-lg">
-                      Skip Question
+                            class="px-5 md:px-8 py-2.5 md:py-3.5 rounded-lg md:rounded-xl text-sm md:text-base font-bold bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-600 hover:bg-slate-300 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-400 dark:focus:ring-slate-500 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-slate-900 transition-all active:scale-95 shadow-lg">
+                      Skip
                     </button>
                   }
                   <button (click)="submit()"
                           [disabled]="examService.currentSelection().length === 0"
-                          class="px-8 py-3.5 rounded-xl font-bold text-white bg-blue-600 hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-slate-900 transition-all shadow-lg shadow-blue-500/20 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
-                    Submit Answer
+                          class="px-5 md:px-8 py-2.5 md:py-3.5 rounded-lg md:rounded-xl text-sm md:text-base font-bold text-white bg-blue-600 hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-slate-900 transition-all shadow-lg shadow-blue-500/20 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
+                    Submit
                   </button>
                 } @else {
                   @if (examService.currentIndex() === examService.totalQuestions() - 1) {
                     <button (click)="finishExam()"
-                            class="px-8 py-3.5 rounded-xl font-bold bg-emerald-600 text-white hover:bg-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all shadow-lg active:scale-95">
-                      Finish Exam
+                            class="px-5 md:px-8 py-2.5 md:py-3.5 rounded-lg md:rounded-xl text-sm md:text-base font-bold bg-emerald-600 text-white hover:bg-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all shadow-lg active:scale-95">
+                      Finish
                     </button>
                   } @else {
                     <button (click)="next()"
-                            class="flex items-center gap-2 px-8 py-3.5 rounded-xl font-bold bg-slate-800 text-white dark:bg-white dark:text-slate-900 hover:bg-slate-700 dark:hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-800 dark:focus:ring-white focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-slate-900 transition-all shadow-xl shadow-slate-800/10 dark:shadow-white/10 active:scale-95">
-                      Next Question
-                      <svg class="w-5 h-5 text-white dark:text-slate-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            class="flex items-center gap-1.5 md:gap-2 px-5 md:px-8 py-2.5 md:py-3.5 rounded-lg md:rounded-xl text-sm md:text-base font-bold bg-slate-800 text-white dark:bg-white dark:text-slate-900 hover:bg-slate-700 dark:hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-800 dark:focus:ring-white focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-slate-900 transition-all shadow-xl shadow-slate-800/10 dark:shadow-white/10 active:scale-95">
+                      Next
+                      <svg class="w-4 h-4 md:w-5 md:h-5 text-white dark:text-slate-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
                       </svg>
                     </button>
@@ -199,6 +222,20 @@ import { ExamService } from '../../services/exam.service';
 export class ExamComponent {
   examService = inject(ExamService);
   private router = inject(Router);
+
+  constructor() {
+    effect(() => {
+      if (this.examService.isExamFinished()) {
+        this.router.navigate(['/results']);
+      }
+    });
+  }
+
+  formatTime(seconds: number): string {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  }
 
   isAttempted(id: number) {
     return this.examService.submittedQuestions().has(id);

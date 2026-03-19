@@ -1,7 +1,7 @@
-import { Component, inject, signal } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, inject, signal, OnInit } from '@angular/core';
+import { Router, ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { ExamService } from '../../services/exam.service';
+import { ExamService, ExamMode } from '../../services/exam.service';
 
 @Component({
   selector: 'app-disclaimer',
@@ -21,10 +21,18 @@ import { ExamService } from '../../services/exam.service';
         </div>
 
         <div class="bg-slate-100 dark:bg-slate-800/50 rounded-2xl p-6 border border-slate-200 dark:border-slate-700/50 mb-8 backdrop-blur-sm shadow-inner">
-          <p class="text-slate-700 dark:text-slate-300 text-lg leading-relaxed">
-            There are <strong class="text-slate-900 dark:text-white">123 questions</strong> here, out of which <strong class="text-slate-900 dark:text-white">54</strong> will be in the official exam. 
-            <span class="text-blue-600 dark:text-blue-400 font-medium">90% questions should match.</span>
-          </p>
+          @if (mode() === 'mock') {
+            <p class="text-slate-700 dark:text-slate-300 text-lg leading-relaxed">
+              This is a mock exam trying to replicate the official GH 300, there will be a <strong class="text-slate-900 dark:text-white">120 minutes timer</strong>, pass marks is <strong class="text-slate-900 dark:text-white">70%</strong>. 
+              <br/><br/>
+              <strong class="text-slate-900 dark:text-white">54 questions</strong> will be randomly shuffled out of the total 123 questions.
+            </p>
+          } @else {
+            <p class="text-slate-700 dark:text-slate-300 text-lg leading-relaxed">
+              There are <strong class="text-slate-900 dark:text-white">123 questions</strong> here, out of which <strong class="text-slate-900 dark:text-white">54</strong> will be in the official exam. 
+              <span class="text-blue-600 dark:text-blue-400 font-medium">90% questions should match.</span>
+            </p>
+          }
         </div>
 
         <label class="flex items-center space-x-4 cursor-pointer group mb-10 p-4 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700/30 transition-colors">
@@ -59,11 +67,21 @@ import { ExamService } from '../../services/exam.service';
     </div>
   `
 })
-export class DisclaimerComponent {
+export class DisclaimerComponent implements OnInit {
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private examService = inject(ExamService);
   
   acknowledged = signal(false);
+  mode = signal<ExamMode>('practise');
+
+  ngOnInit() {
+    this.route.queryParams.subscribe(params => {
+      if (params['mode']) {
+        this.mode.set(params['mode'] as ExamMode);
+      }
+    });
+  }
 
   toggleAcknowledge() {
     this.acknowledged.update(v => !v);
@@ -75,7 +93,7 @@ export class DisclaimerComponent {
 
   start() {
     if (this.acknowledged()) {
-      this.examService.startExam();
+      this.examService.startExam(this.mode());
       this.router.navigate(['/exam']);
     }
   }
