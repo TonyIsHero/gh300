@@ -4,4 +4,6 @@ export interface Question {
   type: 'single' | 'multiple';
   options: string[];
   correctAnswers: number[];
+  category?: string;
+  explanation?: string;
 }
