@@ -18,7 +18,8 @@ import { ExamService } from '../../services/exam.service';
               <button (click)="examService.jumpToQuestion(i)"
                       class="flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all focus:outline-none"
                       [ngClass]="{
-                        'border-emerald-500 text-emerald-600 dark:text-emerald-400': isAttempted(q.id) && examService.currentIndex() !== i,
+                        'border-emerald-500 text-emerald-600 dark:text-emerald-400': isCorrectAttempt(q.id) && examService.currentIndex() !== i,
+                        'border-red-500 text-red-600 dark:text-red-400': isIncorrectPracticeAttempt(q.id) && examService.currentIndex() !== i,
                         'border-slate-300 dark:border-slate-600 text-slate-400 hover:border-slate-400 dark:hover:border-slate-400 hover:text-slate-600 dark:hover:text-slate-200': !isAttempted(q.id) && examService.currentIndex() !== i,
                         'ring-2 ring-blue-500 ring-offset-2 ring-offset-white dark:ring-offset-slate-900 border-transparent bg-blue-500/10 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400': examService.currentIndex() === i
                       }">
@@ -303,6 +304,28 @@ export class ExamComponent {
 
   isAttempted(id: number) {
     return this.examService.submittedQuestions().has(id);
+  }
+
+  isCorrectAttempt(id: number) {
+    if (!this.isAttempted(id)) return false;
+    if (this.examService.mode() === 'mock') return true;
+    return this.isQuestionCorrect(id);
+  }
+
+  isIncorrectPracticeAttempt(id: number) {
+    return this.examService.mode() === 'practise' && this.isAttempted(id) && !this.isQuestionCorrect(id);
+  }
+
+  private isQuestionCorrect(id: number) {
+    const q = this.examService.activeQuestions().find(question => question.id === id);
+    if (!q) return false;
+
+    const selected = this.examService.userAnswers().get(id) || [];
+    if (selected.length !== q.correctAnswers.length) return false;
+
+    const sortedSelected = [...selected].sort((a, b) => a - b);
+    const sortedCorrect = [...q.correctAnswers].sort((a, b) => a - b);
+    return sortedSelected.every((val, index) => val === sortedCorrect[index]);
   }
 
   isFlagged(id: number) {

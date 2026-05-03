@@ -139,8 +139,8 @@ export class ResultsComponent {
     return this.examService.activeQuestions().filter(q => {
       const selected = answers.get(q.id) || [];
       if (selected.length !== q.correctAnswers.length) return true;
-      const sortedSelected = [...selected].sort();
-      const sortedCorrect = [...q.correctAnswers].sort();
+      const sortedSelected = [...selected].sort((a, b) => a - b);
+      const sortedCorrect = [...q.correctAnswers].sort((a, b) => a - b);
       return !sortedSelected.every((val, index) => val === sortedCorrect[index]);
     });
   });
