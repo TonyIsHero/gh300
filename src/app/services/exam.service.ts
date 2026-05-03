@@ -58,8 +58,8 @@ export class ExamService {
     const selected = this.currentSelection();
     const correct = q.correctAnswers;
     if (selected.length !== correct.length) return false;
-    const sortedSelected = [...selected].sort();
-    const sortedCorrect = [...correct].sort();
+    const sortedSelected = [...selected].sort((a, b) => a - b);
+    const sortedCorrect = [...correct].sort((a, b) => a - b);
     return sortedSelected.every((val, index) => val === sortedCorrect[index]);
   });
 
@@ -69,8 +69,8 @@ export class ExamService {
     this.activeQuestions().forEach(q => {
       const selected = answers.get(q.id) || [];
       if (selected.length === q.correctAnswers.length) {
-        const sortedSelected = [...selected].sort();
-        const sortedCorrect = [...q.correctAnswers].sort();
+        const sortedSelected = [...selected].sort((a, b) => a - b);
+        const sortedCorrect = [...q.correctAnswers].sort((a, b) => a - b);
         if (sortedSelected.every((val, index) => val === sortedCorrect[index])) {
           correctCount++;
         }
@@ -97,6 +97,11 @@ export class ExamService {
         submittedQuestions: Array.from(this.submittedQuestions().values()),
         flaggedQuestions: Array.from(this.flaggedQuestions().values()),
         isExamFinished: this.isExamFinished(),
+        activeQuestions: this.activeQuestions().map(q => ({
+          id: q.id,
+          options: q.options,
+          correctAnswers: q.correctAnswers
+        })),
         activeQuestionsIds: this.activeQuestions().map(q => q.id)
       };
       if (typeof window !== 'undefined' && window.localStorage) {
@@ -118,7 +123,22 @@ export class ExamService {
           if (parsed.submittedQuestions) this.submittedQuestions.set(new Set(parsed.submittedQuestions));
           if (parsed.flaggedQuestions) this.flaggedQuestions.set(new Set(parsed.flaggedQuestions));
           if (parsed.isExamFinished !== undefined) this.isExamFinished.set(parsed.isExamFinished);
-          if (parsed.activeQuestionsIds) {
+          if (parsed.activeQuestions) {
+             const allQ = this.allQuestions();
+             const activeQ = parsed.activeQuestions.map((savedQuestion: Pick<Question, 'id' | 'options' | 'correctAnswers'>) => {
+               const baseQuestion = allQ.find(q => q.id === savedQuestion.id);
+               return baseQuestion
+                ? {
+                    ...baseQuestion,
+                    options: savedQuestion.options,
+                    correctAnswers: savedQuestion.correctAnswers
+                  }
+                : null;
+             }).filter((q: Question | null): q is Question => q !== null);
+             if (activeQ.length > 0) {
+               this.activeQuestions.set(activeQ);
+             }
+          } else if (parsed.activeQuestionsIds) {
              const allQ = this.allQuestions();
              const activeQ = parsed.activeQuestionsIds.map((id: number) => allQ.find(q => q.id === id)).filter((q: any) => q);
              if (activeQ.length > 0) {
@@ -144,8 +164,9 @@ export class ExamService {
   startExam(mode: ExamMode = 'practise') {
     this.mode.set(mode);
     if (mode === 'mock') {
-       const shuffled = [...this.allQuestions()].sort(() => 0.5 - Math.random());
-       this.activeQuestions.set(shuffled.slice(0, 54));
+       const shuffled = this.shuffleArray(this.allQuestions());
+       const mockQuestions = shuffled.slice(0, 54).map(q => this.shuffleQuestionOptions(q));
+       this.activeQuestions.set(mockQuestions);
        this.timeRemaining.set(120 * 60);
        this.startTimer();
     } else {
@@ -157,6 +178,32 @@ export class ExamService {
     this.submittedQuestions.set(new Set());
     this.flaggedQuestions.set(new Set());
     this.isExamFinished.set(false);
+  }
+
+  private shuffleQuestionOptions(question: Question): Question {
+    const optionEntries = question.options.map((option, originalIndex) => ({ option, originalIndex }));
+    const shuffledOptions = this.shuffleArray(optionEntries);
+    const correctAnswers = shuffledOptions.reduce<number[]>((answers, entry, newIndex) => {
+      if (question.correctAnswers.includes(entry.originalIndex)) {
+        answers.push(newIndex);
+      }
+      return answers;
+    }, []);
+
+    return {
+      ...question,
+      options: shuffledOptions.map(entry => entry.option),
+      correctAnswers
+    };
+  }
+
+  private shuffleArray<T>(items: readonly T[]): T[] {
+    const shuffled = [...items];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
   }
 
   private startTimer() {
